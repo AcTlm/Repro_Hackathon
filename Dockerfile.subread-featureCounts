@@ -1,0 +1,31 @@
+# Install instructions : https://subread.sourceforge.net/ and README.txt in the source archive
+# Source from : https://sourceforge.net/projects/subread/files/subread-2.0.3/
+# Build with : "docker build -t featureCounts -f Dockerfile.subread-featureCounts ."
+# Run with : "docker run -it featureCounts featureCounts -v"
+
+FROM ubuntu:22.04
+
+# Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Upgrade ubuntu, install mandatory dependencies and clean
+RUN \
+    apt-get update && \
+    apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
+    apt-get install -y wget make gcc zlib1g-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /data
+WORKDIR /data/
+
+RUN wget -O subread-2.0.3-source.tar.gz https://sourceforge.net/projects/subread/files/subread-2.0.3/subread-2.0.3-source.tar.gz/download && \
+    tar -xzf subread-2.0.3-source.tar.gz && \
+    rm subread-2.0.3-source.tar.gz
+
+RUN cd subread-2.0.3-source/src && make -f Makefile.Linux featureCounts && \
+	mv /data/subread-2.0.3-source/src/featureCounts /usr/local/bin && \ 
+	chmod +x /usr/local/bin/featureCounts && \
+	rm -rf /data/subread-2.0.3-source
+
+CMD ["featureCounts"]
