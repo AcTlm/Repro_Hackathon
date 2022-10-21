@@ -1,18 +1,20 @@
-git clone https://github.com/AcTlm/Hackathon
+git clone https://github.com/AcTlm/Repro_Hackathon 
 
 apt-get install -y wget ###  telecharger wget et install pour tout le workflow
 apt-get install  -y gunzip 
 
-samples = ["SRR628582","SRR628583",]
+samples = ["SRR628582","SRR628583",...]
 
 # Fichiers en sortie du pipeline 
-rule target:
+rule all:
     input:
         #### a ecrire 
+	
 # Creer une liste des SRR pour tout le worlflow 
 rule all:
 	input:
-		expand("fastqc/{sample}_fastqc.html", sample=samples) 
+		expand("fastqc/{sample}_fastqc.html", sample=samples) ###
+		default_target: True ### cette règle ets la 
 
 ### telechargement des transcriptomes des individus malades
 rule DownloadSRR_fastq: 
@@ -83,10 +85,10 @@ rule index_REFhumain:
 	docker run -it -v $PWD/data:rw /STAR --runThreadN <nb cpus> --runMode genomeGenerate --genomeDir ref/ --genomeFastaFiles ref_human.fa
 
 rule mapping:
-	input: 
-		{sample}.fastq"
+    input: 
+	sample}.fastq"
         saindex.sratools
-		ref_human_index
+	Homo_sapiens.GRCh38.101.chr.gtf
     output:
   		mapping/{sample}.sor.bam # quelle est l'extension 
 
