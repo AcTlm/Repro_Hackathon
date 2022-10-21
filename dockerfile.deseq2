@@ -1,0 +1,3 @@
+FROM rocker/r-base:4.2.1
+Run R -e 'if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager")' 
+Run R -e 'BiocManager::install("DESeq2")'
