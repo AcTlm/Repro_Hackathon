@@ -1,0 +1,43 @@
+SRR=['SRR628582', 'SRR628583', 'SRR628584', 'SRR628585', 'SRR628586', 'SRR628587', 'SRR628588', 'SRR528589']
+
+rule all:
+    input: 
+        expand ("{sample}_{RF}_fastqc.html", sample=SRR, RF=["1","2"]), "ref_human.fa", "human.chr.gtf"
+
+rule prefetch:
+    output: "{sample}/{sample}.sra"
+    container: "docker://nj1110/sratools"   
+    shell:
+        "prefetch {wildcards.sample} > {output}"
+
+
+rule fasterqdump:
+    input: "{sample}/{sample}.sra"
+    output: "{sample}_1.fastq", "{sample}_2.fastq",
+    container: "docker://nj1110/sratools"
+    shell: 
+        "fasterq-dump {input}"
+
+rule fastqc:
+    input: "{sample}_1.fastq", "{sample}_2.fastq",
+    output: "{sample}_1_fastqc.html", "{sample}_2_fastqc.html",
+    container: "docker://nj1110/fastqc:latest"
+    shell: 
+        "fastqc {input}"
+
+
+rule Download_ref_human:
+    output:	"ref_human.fa"
+    shell: 
+	    """
+        wget -O chromosome.fa.gz ftp://ftp.ensembl.org/pub/release-101/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.chromosome.*.fa.gz
+	    gunzip -c chromosome.fa > ref_human.fa
+	    rm chromosome.fa.gz"""
+
+rule DownloadGFF:
+    output:"human.chr.gtf"
+    shell:
+        """
+        wget -O $PWD/Homo_sapiens.GRCh38.101.chr.gtf.gz ftp://ftp.ensembl.org/pub/release-101/gtf/homo_sapiens/Homo_sapiens.GRCh38.101.chr.gtf.gz
+	    gunzip -c Homo_sapiens.GRCh38.101.chr.gtf >  human.chr.gtf
+        rm Homo_sapiens.GRCh38.101.chr.gtf.gz"""
