@@ -12,7 +12,7 @@ rule index_REFhumain:
     shell: "star {input}"
 
 rule mapping_samtools:
-    input: "SA", "SAindex", "{sample}_1.fastq", "{sample}_2.fastq"
+    input: "SA", "SAindex", "{sample}_1.fastq", "{sample}_2.fastq" ## paut-etre qui'il faut remplacer SA et SAindex par le dossier de sortie de l'indexage ?? 
     output: "mapped_reads/mapped_{sample}_{RF}.bam"  
     container: "docker://nj1110/samtools"
     shell: bwa mem {input} | samtools view -Sb - > {output}"
