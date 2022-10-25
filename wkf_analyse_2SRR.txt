@@ -1,0 +1,28 @@
+SRR=['SRR628582', 'SRR628583']
+
+rule all:
+    input: 
+        expand ("mapped_reads/mapped_{sample}_{RF}.bam",sample=SRR,RF=["1","2"])
+
+rule index_REFhumain:
+    input: 
+    "ref_human.fa"
+    output: "SA", "SAindex" 
+    container: "docker://nj1110/star"
+    shell: "star {input}"
+
+rule mapping_samtools:
+    input: ref_human.fa, "{sample}_1.fastq", "{sample}_2.fastq"
+    output: "mapped_reads/mapped_{sample}_{RF}.bam"  
+    container: "docker://nj1110/samtools"
+    shell: bwa mem {input} | samtools view -Sb - > {output}"
+
+#rule counting_reads:
+    #input: "mapped_reads/mapped_{sample}_{RF}.bam"
+    #output: .csv 
+    #shell: "docker://nj1110/subread"
+
+#rule Analyse_stat:
+    #input : 
+    #output:"docker://nj1110/sDESeq2"
+    #shell: .R 
