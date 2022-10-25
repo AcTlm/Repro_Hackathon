@@ -12,7 +12,7 @@ rule index_REFhumain:
     shell: "star {input}"
 
 rule mapping_samtools:
-    input: ref_human.fa, "{sample}_1.fastq", "{sample}_2.fastq"
+    input: "SA", "SAindex", "{sample}_1.fastq", "{sample}_2.fastq"
     output: "mapped_reads/mapped_{sample}_{RF}.bam"  
     container: "docker://nj1110/samtools"
     shell: bwa mem {input} | samtools view -Sb - > {output}"
@@ -25,4 +25,4 @@ rule mapping_samtools:
 #rule Analyse_stat:
     #input : 
     #output:"docker://nj1110/sDESeq2"
-    #shell: .R 
+    #shell: doc.R 
