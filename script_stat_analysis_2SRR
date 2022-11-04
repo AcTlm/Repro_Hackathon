@@ -1,17 +1,8 @@
-###  HACKATHON TRAITEMENT STAT 
+###  HACKATHON TRAITELENt STAT 
 ###  Anne-cécile 
 ###  30/10/2022
 
-#####################################################
-#####  Differential expression analysis using DESeq2
-####################################################
-
 ## Packages -------------------- 
-install.packages("RColorBrewer")
-install.packages("S4Vectors")
-install.packages("stats4")
-install.packages("BiocGenerics")
-install.packages("parallel")
 
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
@@ -20,20 +11,19 @@ BiocManager::install("DESeq2")
 library( "DESeq2")
 library("ggplot2")
 library("readr")
-library("RColorBrewer")
-library("S4Vectors")
-library("stats4")
-library("BiocGenerics")
-library("parallel")
 
-#### documents d'aiude pour le traitement ...........
+
+#### documents d'aide pour le traitement ...........
 #https://med.und.edu/research/genomics-core/_files/docs/deseq2-handout.pdf
 #http://sthda.com/english/wiki/rna-seq-differential-expression-work-flow-using-deseq2#example-bam-files
 #https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html#Packages
 
 ### data ----------------------
+
 setwd("~/AMI2B/Hackathon/DESeq2_analyse_stat")
-counts_db <- read.delim("database_2samples.txt",skip = 1)
+counts_db <- read.delim("count.txt",skip = 1)#
+head(counts_db)
+summary(counts_db)
 
 annotation <- counts_db[,c(1:6)]
 rownames(counts) <- counts$Geneid
@@ -41,7 +31,7 @@ counts <- counts_db[,-c(1:6)]
 colnames(counts) <- gsub("Alignments\\.|_sorted.bam","",colnames(counts))
 
 ## treatment group-------------------
-cellType <- c("cancer","human") ###ref and cancer??
+cellType <- c("SRR1","SRR2") ###ref and cancer??
 sampleName <- paste(cellType,c(1:2),sep = "_")
 colData <- data.frame(row.names = colnames(counts), cellType = cellType,sampleName = sampleName)
 colData
@@ -49,7 +39,7 @@ cellType = as.factor(cellType)
 
 ###  combiner les reads & groupes ------------------
 
-dds <- DESeqDataSetFromMatrix(countData = counts, design = ~ 1, colData = colData)
+dds <- DESeqDataSetFromMatrix(countData = counts, design = ~ 1, colData = colData) ### ~ cellType
 mcols(dds) <- DataFrame(annotation)
 dds <- DESeq(dds,betaPrior = T)
 
@@ -64,7 +54,7 @@ plotDispEsts(dds)
 
 #### ANlayse of replication by group --------------
 rld <- rlog(dds)  ## log of normalized counts 
-plotPCA(rld,intgroup = "cellType") ## Principal Components Analyis by grpup cancer & human_ref ? 
+plotPCA(rld,intgroup = "cellType") ## Principal Components Analyise by grpup cancer & human_ref ? 
 
 #### Heatmap ----------------------
 hmcol <- colorRampPalette(brewer.pal(9, 'GnBu'))(100)
@@ -72,38 +62,21 @@ dists <- dist(t(assay(rld)))
 mat <- as.matrix(dists)
 rownames(mat) <- colnames(mat) <- as.character(colData$sampleName)
 hc <- hclust(dists)
-heatmap(mat, Rowv=as.dendrogram(hc), symm=T, trace='none', col=rev(hmcol), margin=c(13,13), main='Title goes here')
+heatmap(mat, Rowv=as.dendrogram(hc), symm=T, trace='none', col=rev(hmcol), margin=c(13,13), main='heatmap')
 
 #### differential expression between treatment conditions ------------ 
 # les deux samples correspodent à deux individus cancereurs , dans cette anlayse ils sont donc dans le memes conditions
 # le graph sera developpé quand Ref _human sera intégré..
-res <- results(dds,contrast = c("cellType","cancer","cancer_2"),alpha = 0.05)
-ummary(res)
+res <- results(dds)#,contrast = c("cellType","cancer","human"),alpha = 0.05)
+summary(res)
+hist( res$pvalue, breaks=20, col="grey" )
 #Plot the counts of some of the top differentially expressed genes as a sanity check:
 plotCounts(dds,gene = "Id4",intgroup = "cellType")
 subset(res,grepl("Hox",rownames(res))) ## subset the results table to look at your favourite genes:
 
-#### log2 Fold Changes as function of expresson----------------
+#### log2 Fold Changes as function of expression----------------
 plotMA(res,alpha = 0.05)
 abline(h=c(-2,2),col = "blue")
-
-
-####################################################
-#####   SURVIVAL ANLAYSIS 
-####################################################
-#Kaplan-Meier survival plots
-
-## Packages -------------------- 
-"install.packages"("survival")"
-
-"
-library(survival)
-library(lubridate)
-library(ggsurvfit)
-library(gtsummary)
-library(tidycmprsk)
-library(condsurv)
-"
 
 
 
