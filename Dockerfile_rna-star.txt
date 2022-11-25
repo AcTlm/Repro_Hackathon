@@ -1,0 +1,14 @@
+# Source from : https://zoomadmin.com/HowToInstall/UbuntuPackage/rna-star
+
+FROM ubuntu:22.04
+
+
+RUN apt-get update && \
+	apt-get upgrade -y && \ 
+	apt-get install -y wget zlib1g-dev g++ make && \
+	apt-get install -y rna-star
+   
+RUN mkdir /data
+WORKDIR /data/
+
+CMD ["STAR"]
