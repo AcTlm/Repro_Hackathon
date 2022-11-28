@@ -1,0 +1,16 @@
+
+METHODE 
+À la suite du comptage, la dernière étape de ce projet vise à analyse la différence d’expression entre les gènes impliqués dans l'expression du cancer uvéal. L’analyse est réalisée sur le logiciel R et s’appuie sur les packages suivants : le package DESeq2 pour l’analyse et le package ggplot2 pour l’affichage. 
+Toute l’analyse statistique s’appuie sur deux fichiers : le fichier « count.txt » obtenu à l’étape de mapping et un fichier « coldata », ce fichier reprend les caractéristiques des individus présenté en bibliographie (individus  « Muted « ou « Wild ».  
+Etape 1 : Pré-traitement et contrôle qualité 
+La première étape du pré-traitement vise à normaliser le nombre de reads afin de mettre à l’echelle les valeurs de comptage. Ainsi, les niveaux d’expressions deviennent comparables entre eux.  La méthode utilisée est la médiane du ratios intégrée au package DESeq2 (1) . Elle intègre la profondeur de séquençage de chaque gène. 
+Cette première étape est suivie par un contrôle qualité des données grâce à une estimation de la dispersion des données puis par 
+https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/04b_DGE_DESeq2_analysis.html
+The DESeq() function normalizes the read counts,estimates dispersions, and fits the linear model, all in one go. The betaPrior = T opton tells DESeq2 to squeeze the log Fold Changes of lowly expressed genes toward zero.
+
+https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106
+
+
+
+DISCUSSION: 
+-	Choix de la méthode de normalisation : https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html#:~:text=The%20first%20step%20in%20the,factors%20(%E2%80%9Cuninteresting%E2%80%9D).
