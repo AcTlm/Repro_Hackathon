@@ -1,4 +1,4 @@
-# Source from : https://zoomadmin.com/HowToInstall/UbuntuPackage/rna-star
+# dockerfile rna-star
 
 FROM ubuntu:22.04
 
