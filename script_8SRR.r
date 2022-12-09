@@ -3,8 +3,8 @@
 
 #######  PACKAGES 
 
-install.packages("RColorBrewer")
-install.packages("ggfortify")
+#install.packages("RColorBrewer")
+#install.packages("ggplot2")
 
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
@@ -14,11 +14,10 @@ library( "DESeq2")
 library("ggplot2")
 library("readr")
 library("RColorBrewer")
-library("ggfortify")
+
 
 #### IMPORT DATA AND TRANSFORM
-setwd("~/AMI2B/Hackathon/DESeq2_analyse_stat")
-#counts_db= read_delim("count_8SRR.csv", delim = ";", escape_double = FALSE, col_types = cols(SRR628582.bam = col_integer(),SRR628583.bam = col_integer(), SRR628584.bam = col_integer(),SRR628585.bam = col_integer(), SRR628586.bam = col_integer(),SRR628587.bam = col_integer(), SRR628588.bam = col_integer(), SRR628589.bam = col_integer()), trim_ws = TRUE)
+setwd("~/AMI2B/Hackathon/DESeq2_analyse_stat/Rendu_hackathon/plot")
 
 counts_db <- read.delim("~/AMI2B/Hackathon/DESeq2_analyse_stat/Rendu_hackathon/count.txt", comment.char="#", stringsAsFactors=TRUE)
 annotation <- counts_db[,c(1:6)]
@@ -42,14 +41,15 @@ sizeFactors(dds) ## normalization factors
 
 
 ####  Dispersion plot
-plotDispEsts(dds)
-#dev.copy2pdf(file = "dispEsts.pdf")
+a = plotDispEsts(dds, main = "Dispersion des gènes")
+dev.copy2pdf(file = "dispersion_genes.pdf")
 
 #### Analyse of replication by group 
 rld <- rlog(dds)  ## log of normalized counts 
 PCA = plotPCA(rld,intgroup = "cellType") ## Principal Components Analyise by group cancer & human_ref ? 
 PCA + geom_label(aes(label = sampleName))
-#dev.copy2pdf(file = "PCA_Hackathon")
+PCA + ggtitle ("Principal Components analyis plot")
+dev.copy2pdf(file = "PCA_Hackathon.pdf")
 
 
 #### Heatmap 
@@ -59,30 +59,51 @@ mat <- as.matrix(dists)
 rownames(mat) <- colnames(mat) <- as.character(colData$sampleName)
 hc <- hclust(dists)
 
-heatmap(mat, Rowv=as.dendrogram(hc), symm=T, trace='none', col=rev(hmcol), margin=c(13,13), main='heatmap')
-#dev.copy2pdf(file = "distClustering.pdf")
+heatmap(mat, Rowv=as.dendrogram(hc), symm=T, trace='none', col=rev(hmcol), margin=c(13,13), main='Heatmap')
+dev.copy2pdf(file = "heatmap.pdf")
 
 #### differential expression between treatment conditions 
 res <- results(dds)#,contrast = c("cellType","cancer","human"),alpha = 0.05)
-result_p = res[order(res$padj),]
-result_p = as.data.frame(result_p)
-
-summary(res)
-#setwd("~/AMI2B/Hackathon/DESeq2_analyse_stat/Rendu_hackathon")
-#write.table(result_p,file="resultats_DESEQ_pvalue.csv",sep =" ")
+result = res[order(res$padj),]
+result = as.data.frame(result)
+head(result)
 
 hist( res$pvalue, breaks=20, col="grey" )
+dev.copy2pdf(file = "residuals_pvalue.pdf")
 
-a = plotCounts(dds,gene = "Id4",intgroup = "cellType")
-dev.copy2pdf(file = "Id4_plotCounts.pdf")
-subset(res,grepl("Hox",rownames(res))) ## subset the results table to look at your favourite genes:
 
-#### log2 Fold Changes as function of expression----------------
-plotMA(results(dds),alpha = 0.05)
+#### log2Fold Changes as function of expression----------------
+plotMA(results(dds),alpha = 0.05, )
 abline(h=c(-2,2),col = "blue")
 
+#### Volcano plot sur les genes etudiées en biblio 
+result_analyse<-result[c("ENSG00000088256","ENSG00000101019","ENSG00000114770","ENSG00000115524","ENSG00000156052","ENSG00000163930","ENSG00000245694","ENSG00000148848"),]
+head(result_analyse)
 
-setwd("~/AMI2B/Hackathon/DESeq2_analyse_stat/Rendu_hackathon")
-write.table(result_p,file="resultats_DESEQ_pvalue.csv",sep =" ")
+par(mfrow=c(1,2))
+a = -log10(0.05)
+
+# Make volcano plot 
+### logfold2Change exprié 2/4 fois plus que les autres 
+with(result_analyse, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot on studied genes", xlim=c(-10,10)))
+with(subset(result_analyse, pvalue<.05 & log2FoldChange>2), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
+with(subset(result_analyse, pvalue<.05 & log2FoldChange<(-2)), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+abline(h = a) 
+abline(v = (-2))
+abline(v = (2))
+dev.copy2pdf(file = "volcano_plot_genes_studied.pdf")
+
+# Make a basic volcano plot 
+with(result, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot for all genes ", xlim=c(-10,10)))
+with(subset(result, pvalue<.05 & log2FoldChange>2), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
+with(subset(result, pvalue<.05 & log2FoldChange<(-2)), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+abline(h = a)
+abline(v = (-2))
+abline(v = (2))
+dev.copy2pdf(file = "volcano_plot_all_genes.pdf")
+
+##### 
+#setwd("~/AMI2B/Hackathon/DESeq2_analyse_stat/Rendu_hackathon")
+#write.table(result_p,file="resultats_DESEQ_pvalue.csv",sep =" ")
 
 
