@@ -1,3 +1,21 @@
-FROM rocker/r-base:4.2.1
-Run R -e 'if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager")' 
-Run R -e 'BiocManager::install("DESeq2")'
+
+
+FROM ubuntu:22.04
+
+#Installation des dépendances
+RUN apt-get update --fix-missing
+RUN DEBIAN_FRONTEND="noninteractive" TZ="Europe" apt-get install -y tzdata
+RUN apt-get install -y libxml2-dev libcurl4-openssl-dev libssl-dev
+RUN apt-get install -y rstudio
+
+### Installation des packages 
+RUN R -e "install.packages('ggplot2')"
+RUN R -e "install.packages('RColorBrewer')"
+RUN R -e 'if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager") '
+RUN R -e 'BiocManager::install("DESeq2")'DESeq2")'
+
+# Rendre le dossier de travail
+WORKDIR /usr/local/src
+
+# Aller à la ligne
+CMD ["/bin/bash"]
