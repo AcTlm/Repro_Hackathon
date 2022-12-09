@@ -15,7 +15,9 @@ RUN R -e 'if (!require("BiocManager", quietly = TRUE)) install.packages("BiocMan
 RUN R -e 'BiocManager::install("DESeq2")'DESeq2")'
 
 # Rendre le dossier de travail
-WORKDIR /usr/local/src
+RUN mkdir /data
+WORKDIR /data/
 
 # Aller à la ligne
-CMD ["/bin/bash"]
+CMD ["R"]
+
