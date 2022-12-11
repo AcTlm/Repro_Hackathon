@@ -1,0 +1,35 @@
+SRR=['SRR628582', 'SRR628583', 'SRR628584', 'SRR628585', 'SRR628586', 'SRR628587', 'SRR628588', 'SRR628589']
+
+
+rule all:
+    input: 
+        "count.txt"
+
+rule Mapping:
+    input: "{sample}_1.fastq", "{sample}_2.fastq",
+    output: "{sample}Aligned.sortedByCoord.out.bam"
+    container: "docker://nj1110/starimg2"
+    shell:
+        """
+        STAR --outSAMstrandField intronMotif \
+	    --runMode alignReads \
+        --outFilterMismatchNmax 4 \
+        --outFilterMultimapNmax 10 \
+        --genomeDir ref \
+        --readFilesIn {input} \
+        --runThreadN 6 \
+        --outSAMunmapped None \
+        --genomeLoad NoSharedMemory \
+        --outSAMtype BAM SortedByCoordinate \
+        --outFileNamePrefix {wildcards.sample} \
+        --outTmpDir {wildcards.sample}_STARtmp """
+
+
+rule Count Reads:
+    input: expand("{sample}Aligned.sortedByCoord.out.bam", sample=SRR)
+    output: "count.txt"
+    container: "docker://nj1110/subread"
+    shell: "featureCounts -T 6 -t gene -g gene_id -s 0 -a human.chr.gtf -o count.txt {input} -p" 
+ 
+    
+

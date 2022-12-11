@@ -1,8 +1,8 @@
-SRR=['SRR628582', 'SRR628583', 'SRR628584', 'SRR628585', 'SRR628586', 'SRR628587', 'SRR628588', 'SRR528589']
+SRR=['SRR628582', 'SRR628583', 'SRR628584', 'SRR628585', 'SRR628586', 'SRR628587', 'SRR628588', 'SRR628589']
 
 rule all:
     input: 
-        expand ("{sample}_{RF}_fastqc.html", sample=SRR, RF=["1","2"]), "ref_human.fa", "human.chr.gtf"
+        expand ("{sample}_{RF}_fastqc.html", sample=SRR, RF=["1","2"]), "ref_human.fa", "human.chr.gtf", directory("ref")
 
 rule prefetch:
     output: "{sample}/{sample}.sra"
@@ -41,3 +41,13 @@ rule DownloadGFF:
         wget -O $PWD/Homo_sapiens.GRCh38.101.chr.gtf.gz ftp://ftp.ensembl.org/pub/release-101/gtf/homo_sapiens/Homo_sapiens.GRCh38.101.chr.gtf.gz
 	    gunzip -c Homo_sapiens.GRCh38.101.chr.gtf >  human.chr.gtf
         rm Homo_sapiens.GRCh38.101.chr.gtf.gz"""
+
+rule index_REFhumain:
+    input: "ref_human.fa"
+    output: directory("ref")
+    container: "docker://nj1110/starimg2"
+    shell:
+        """
+ 	mkdir ref
+	chmod 777 ref
+	STAR --runThreadN 6 --runMode genomeGenerate --genomeDir ref/ --genomeFastaFiles {input}"""
